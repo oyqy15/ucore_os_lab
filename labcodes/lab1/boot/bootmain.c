@@ -86,7 +86,7 @@ readseg(uintptr_t va, uint32_t count, uint32_t offset) {
 void
 bootmain(void) {
     // read the 1st page off disk
-    readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0);
+    readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0); //read 8 sectors
 
     // is this a valid ELF?
     if (ELFHDR->e_magic != ELF_MAGIC) {
