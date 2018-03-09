@@ -300,8 +300,9 @@ print_stackframe(void) {
         for(j = 0; j < 4; j ++ ) cprintf("0x%08x ",args[j]);
         cprintf("\n");
         print_debuginfo(eip-1);
-        ebp = *((uint32_t *)ebp);
+        
         eip = *((uint32_t *)(ebp + 4));
+        ebp = *((uint32_t *)ebp);
                 
     }
      /* LAB1 YOUR CODE : STEP 1 */
