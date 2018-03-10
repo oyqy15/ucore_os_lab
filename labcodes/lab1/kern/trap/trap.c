@@ -39,7 +39,8 @@ idt_init(void) {
 	for(i = 0;i < 256;i ++){
 		SETGATE(idt[i],0,GD_KTEXT,__vectors[i],DPL_KERNEL)
 	}
-	SETGATE(idt[128],1,GD_KTEXT,__vectors[128],DPL_USER)
+	SETGATE(idt[128],1,GD_KTEXT,__vectors[128],DPL_USER);
+	SETGATE(idt[T_SWITCH_TOK],0,GD_KTEXT,__vectors[T_SWITCH_TOK],DPL_USER);
 	lidt(&idt_pd);
      /* LAB1 YOUR CODE : STEP 2 */
      /* (1) Where are the entry addrs of each Interrupt Service Routine (ISR)?
