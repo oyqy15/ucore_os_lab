@@ -37,10 +37,11 @@ idt_init(void) {
 	extern uintptr_t __vectors[];
 	int i;
 	for(i = 0;i < 256;i ++){
-		SETGATE(idt[i],0,GD_KTEXT,__vectors[i],DPL_KERNEL)
+		SETGATE(idt[i],0,KERNEL_CS,__vectors[i],DPL_KERNEL)
 	}
-	SETGATE(idt[128],1,GD_KTEXT,__vectors[128],DPL_USER);
-	SETGATE(idt[T_SWITCH_TOK],0,GD_KTEXT,__vectors[T_SWITCH_TOK],DPL_USER);
+	SETGATE(idt[T_SYSCALL],1,KERNEL_CS,__vectors[T_SYSCALL],DPL_USER);
+	SETGATE(idt[T_SWITCH_TOK],1,KERNEL_CS,__vectors[T_SWITCH_TOK],DPL_USER);
+	SETGATE(idt[T_SWITCH_TOU],1,KERNEL_CS,__vectors[T_SWITCH_TOU],DPL_KERNEL);
 	lidt(&idt_pd);
      /* LAB1 YOUR CODE : STEP 2 */
      /* (1) Where are the entry addrs of each Interrupt Service Routine (ISR)?
@@ -146,7 +147,7 @@ print_regs(struct pushregs *regs) {
 static void
 trap_dispatch(struct trapframe *tf) {
     char c;
-
+    //print_trapframe(tf);
     switch (tf->tf_trapno) {
     case IRQ_OFFSET + IRQ_TIMER:
 		ticks ++;
@@ -168,8 +169,20 @@ trap_dispatch(struct trapframe *tf) {
         break;
     //LAB1 CHALLENGE 1 : YOUR CODE you should modify below codes.
     case T_SWITCH_TOU:
+    	if (tf->tf_cs == KERNEL_CS){
+    		tf->tf_ss = tf->tf_ds = tf->tf_es = USER_DS;
+    		tf->tf_cs = USER_CS;
+    		tf->tf_esp = (uint32_t)tf + sizeof(struct trapframe);
+    		tf->tf_eflags |= FL_IOPL_3;
+    	}
+    	break;
     case T_SWITCH_TOK:
-        panic("T_SWITCH_** ??\n");
+        //panic("T_SWITCH_** ??\n");
+    	if (tf->tf_cs == USER_CS){
+    		tf->tf_ds = tf->tf_es = KERNEL_DS;
+    		tf->tf_cs = KERNEL_CS;
+    		tf->tf_eflags |= FL_IOPL_0;
+    	}
         break;
     case IRQ_OFFSET + IRQ_IDE1:
     case IRQ_OFFSET + IRQ_IDE2:
