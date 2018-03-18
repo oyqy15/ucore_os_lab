@@ -296,7 +296,7 @@ print_stackframe(void) {
     uint32_t *args;
     for (i = 0; ebp && i < STACKFRAME_DEPTH; i++){
         cprintf("ebp:0x%08x eip:0x%08x args:",ebp,eip);
-        args = (uint32_t *)ebp + 2;
+        args = (uint32_t *)ebp + 2;  //ebp+1 is return address
         for(j = 0; j < 4; j ++ ) cprintf("0x%08x ",args[j]);
         cprintf("\n");
         print_debuginfo(eip-1);
