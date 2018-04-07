@@ -134,6 +134,13 @@ default_alloc_pages(size_t n) {
             break;
         }
     }
+    /*
+    below is the program to alloc the free page which the lab2 already had.
+    but some bugs occurs.
+    parameters errored in list_del,list_add.
+    i will over write the function after that.
+
+
     if (page != NULL) {
         list_del(&(page->page_link));
         if (page->property > n) {
@@ -143,6 +150,30 @@ default_alloc_pages(size_t n) {
     }
         nr_free -= n;
         ClearPageProperty(page);
+    }
+    */
+
+    if (page != NULL) {
+    	if (page->property > n) {
+    		struct Page *newp = page + n;
+    		// TODO: property
+    		newp->property = page->property - n;
+    		list_add(&(page->page_link), &(newp->page_link));
+
+    		// TODO: flag
+    		SetPageProperty(newp);
+
+    		// TODO: ref
+
+    	}
+
+    	page->property = n;
+    	ClearPageProperty(page);
+    	// TODO: ref
+
+    	list_del(&(page->page_link));
+
+    	nr_free-=n;
     }
     return page;
 }
@@ -175,7 +206,17 @@ default_free_pages(struct Page *base, size_t n) {
         }
     }
     nr_free += n;
-    list_add(&free_list, &(base->page_link));
+
+    le = list_next(&free_list);
+    while (le != &free_list) {
+    	if (base + base->property <= le)
+    		break;
+    	le = list_next(le);
+    }
+    list_add_before(le, &(base->page_link));
+    //error
+    //list_add(&free_list, &(base->page_link));
+    //find the suitable position for base
 }
 
 static size_t
