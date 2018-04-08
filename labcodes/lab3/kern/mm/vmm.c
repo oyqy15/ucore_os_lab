@@ -370,15 +370,14 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
     } else {
         if (swap_init_ok) {
             struct Page *page = NULL;
-            swap_in(mm, addr, page);
+            swap_in(mm, addr, &page);
             page_insert(mm->pgdir, page, addr, perm);
-            swap_map_swappable(mm, addr, page, 0); // i don't know what the 4th parameter swap_in means, so i choose the 0
-
+            swap_map_swappable(mm, addr, page, 5); // i don't know what the 4th parameter swap_in means, so i choose a random number
+            page->pra_vaddr = addr;
         } else {
             cprintf("no swap_init_ok but ptep is %x, failed\n",*ptep);
             goto failed;
         }
-
     }
 #if 0
     /*LAB3 EXERCISE 1: YOUR CODE*/

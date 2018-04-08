@@ -73,8 +73,9 @@ _fifo_swap_out_victim(struct mm_struct *mm, struct Page ** ptr_page, int in_tick
      //(2)  assign the value of *ptr_page to the addr of this page
 
     list_entry_t *front = head->prev;
+    struct Page* tmp_p = le2page(front, pra_page_link);
     list_del(front);
-    le2page(front) = *ptr_page;
+    *ptr_page = tmp_p;
 
     return 0;
 }
