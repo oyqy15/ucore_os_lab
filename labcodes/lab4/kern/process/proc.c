@@ -284,6 +284,17 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
         goto fork_out;
     }
     ret = -E_NO_MEM;
+
+    proc = alloc_proc();
+    if (proc == NULL) goto fork_out;
+    if (setup_kstack(proc)!=0) goto fork_out;
+    copy_mm(clone_flags, proc);
+    copy_thread(proc, proc->kstack, tf);
+
+    hash_proc(proc);
+    wakeup_proc(proc);
+    ret = get_pid();
+
     //LAB4:EXERCISE2 YOUR CODE
     /*
      * Some Useful MACROs, Functions and DEFINEs, you can use them in below implementation.
