@@ -287,13 +287,18 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
 
     proc = alloc_proc();
     if (proc == NULL) goto fork_out;
-    if (setup_kstack(proc)!=0) goto fork_out;
+    proc->parent = current;
+    if (setup_kstack(proc)!=0) goto bad_fork_cleanup_kstack;
     copy_mm(clone_flags, proc);
-    copy_thread(proc, proc->kstack, tf);
+    copy_thread(proc, stack, tf);
+
+    proc->pid = get_pid();
 
     hash_proc(proc);
+    list_add(&proc_list, &(proc->list_link));
     wakeup_proc(proc);
-    ret = get_pid();
+    nr_process ++;
+    ret = proc->pid;
 
     //LAB4:EXERCISE2 YOUR CODE
     /*
