@@ -113,7 +113,7 @@ alloc_proc(void) {
         proc->tf = NULL;
         proc->cr3 = boot_cr3;
         proc->flags = 0;
-        memset(proc->name, 0, PROC_NAME_LEN);
+        memset(proc->name, 0, sizeof(proc->name));
     }
     return proc;
 }
