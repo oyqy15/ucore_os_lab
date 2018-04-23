@@ -41,6 +41,15 @@ static struct pseudodesc idt_pd = {
 /* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S */
 void
 idt_init(void) {
+	extern uintptr_t __vectors[];
+	int i;
+	for(i = 0;i < 256;i ++){
+		SETGATE(idt[i],0,KERNEL_CS,__vectors[i],DPL_KERNEL)
+	}
+	SETGATE(idt[T_SYSCALL],1,KERNEL_CS,__vectors[T_SYSCALL],DPL_USER);
+	SETGATE(idt[T_SWITCH_TOK],1,KERNEL_CS,__vectors[T_SWITCH_TOK],DPL_USER);
+	SETGATE(idt[T_SWITCH_TOU],1,KERNEL_CS,__vectors[T_SWITCH_TOU],DPL_KERNEL);
+	lidt(&idt_pd);
      /* LAB1 YOUR CODE : STEP 2 */
      /* (1) Where are the entry addrs of each Interrupt Service Routine (ISR)?
       *     All ISR's entry addrs are stored in __vectors. where is uintptr_t __vectors[] ?
@@ -209,10 +218,8 @@ trap_dispatch(struct trapframe *tf) {
         syscall();
         break;
     case IRQ_OFFSET + IRQ_TIMER:
-#if 0
-    LAB3 : If some page replacement algorithm(such as CLOCK PRA) need tick to change the priority of pages,
-    then you can add code here. 
-#endif
+		ticks ++;
+		if (ticks % TICK_NUM == 0) print_ticks();
         /* LAB1 YOUR CODE : STEP 3 */
         /* handle the timer interrupt */
         /* (1) After a timer interrupt, you should record this event using a global variable (increase it), such as ticks in kern/driver/clock.c
