@@ -116,6 +116,8 @@ alloc_proc(void) {
       proc->tf = NULL;
       proc->flags = 0;
       memset(proc->name, 0 ,sizeof(proc->name));
+
+      proc->wait_state =0;
     }
     return proc;
 }
@@ -381,7 +383,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     proc = alloc_proc();
     if (proc == NULL) goto fork_out;
     proc->parent = current;
-    assert(current->wait_state = 0);
+    assert(current->wait_state == 0);
 
     if (setup_kstack(proc)!=0) goto bad_fork_cleanup_kstack;
     if (copy_mm(clone_flags, proc)!=0) goto bad_fork_cleanup_proc;
@@ -634,10 +636,10 @@ load_icode(unsigned char *binary, size_t size) {
      */
 
     tf->tf_cs = USER_CS;
-    tf->tf_ds = tf->es = tf->ss = USER_DS;
+    tf->tf_ds = tf->tf_es = tf->tf_ss = USER_DS;
     tf->tf_esp = USTACKTOP;
     tf->tf_eip = elf->e_entry;
-    tf_eflags |=  (FL_IOPL_MASK | FL_IF);
+    tf->tf_eflags |=   (FL_IOPL_MASK | FL_IF);
 
     ret = 0;
 out:
