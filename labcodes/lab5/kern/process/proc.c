@@ -398,7 +398,6 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     hash_proc(proc);
     set_links(proc);
     wakeup_proc(proc);
-    nr_process ++;
 
     local_intr_restore(intr_flag); //according to answer
 
@@ -828,8 +827,6 @@ static int
 init_main(void *arg) {
     size_t nr_free_pages_store = nr_free_pages();
     size_t kernel_allocated_store = kallocated();
-
-    cprintf("i am in");
 
     int pid = kernel_thread(user_main, NULL, 0);
     if (pid <= 0) {
