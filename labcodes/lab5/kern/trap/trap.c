@@ -219,7 +219,8 @@ trap_dispatch(struct trapframe *tf) {
     case IRQ_OFFSET + IRQ_TIMER:
 		ticks ++;
 		if (ticks % TICK_NUM == 0) {
-            cprintf("time_ticks :%d\n", ticks);
+            //cprintf("time_ticks :%d\n", ticks);
+	//print_ticks();
             current->need_resched = 1;
         }
         /* LAB1 YOUR CODE : STEP 3 */
