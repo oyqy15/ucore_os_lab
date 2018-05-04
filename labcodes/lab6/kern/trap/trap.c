@@ -220,7 +220,7 @@ trap_dispatch(struct trapframe *tf) {
     case IRQ_OFFSET + IRQ_TIMER:
 		ticks ++;
 		if (ticks % TICK_NUM == 0) {
-            sched_class_proc_tick(current)
+            sched_class_proc_tick(current);
         }
         /* LAB1 YOUR CODE : STEP 3 */
         /* handle the timer interrupt */
