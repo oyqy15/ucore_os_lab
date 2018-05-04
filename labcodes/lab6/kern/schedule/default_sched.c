@@ -71,7 +71,7 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (3) set proc->rq pointer to rq
       * (4) increase rq->proc_num
       */
-      list_add_before(&(rq->run_list),&(proc->run_list));
+      list_add_before(&(rq->run_list),&(proc->run_link));
       proc->time_slice = rq->max_time_slice;
       proc->rq = rq;
       rq->proc_num ++;
@@ -93,7 +93,7 @@ stride_dequeue(struct run_queue *rq, struct proc_struct *proc) {
       *         skew_heap_remove: remove a entry from skew_heap
       *         list_del_init: remove a entry from the  list
       */
-      list_del_init(&(proc->run_list));
+      list_del_init(&(proc->run_link));
       proc->rq = NULL;
       rq->proc_num --;
 }
@@ -126,10 +126,10 @@ stride_pick_next(struct run_queue *rq) {
       if (le == rq->runlist)
         return NULL;
 
-      ans = le;
+      ans = le2proc(le, run_link);
 
       while (le != rq->runlist) {
-        tmp = le2proc(le, run_list);
+        tmp = le2proc(le, run_link);
         if ((int32_t)(tmp->lab6_stride-ans->lab6_stride)<0)
           ans = tmp;
         le = list_next(le);
