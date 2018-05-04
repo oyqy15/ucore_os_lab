@@ -123,12 +123,12 @@ stride_pick_next(struct run_queue *rq) {
       struct proc_struct *ans, *tmp;
       list_entry_t *le = list_next(&(rq->run_list));
 
-      if (le == rq->run_list)
+      if (le == &(rq->run_list))
         return NULL;
 
       ans = le2proc(le, run_link);
 
-      while (le != rq->run_list) {
+      while (le != &(rq->run_list)) {
         tmp = le2proc(le, run_link);
         if ((int32_t)(tmp->lab6_stride-ans->lab6_stride)<0)
           ans = tmp;
