@@ -42,7 +42,7 @@ stride_init(struct run_queue *rq) {
       * (3) set number of process: rq->proc_num to 0       
       */
 
-    list_init(&rq->run_list);
+    list_init(&(rq->run_list));
     rq->lab6_run_pool = NULL;
     rq->proc_num = 0;
 }
@@ -135,7 +135,10 @@ stride_pick_next(struct run_queue *rq) {
         le = list_next(le);
       }
 
-      ans->lab6_stride += (BIG_STRIDE / ans->lab6_priority);
+      if (ans->lab6_priority!=0)
+      	ans->lab6_stride += (BIG_STRIDE / ans->lab6_priority);
+      else
+	ans->lab6_stride += BIG_STRIDE;
       return ans;
 }
 
