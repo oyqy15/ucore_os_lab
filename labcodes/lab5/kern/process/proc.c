@@ -746,7 +746,7 @@ repeat:
 
 found:
     if (proc == idleproc || proc == initproc) {
-        panic("wait idleproc or initproc.\n");
+        panic("w  \n");
     }
     if (code_store != NULL) {
         *code_store = proc->exit_code;
