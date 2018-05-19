@@ -219,9 +219,8 @@ trap_dispatch(struct trapframe *tf) {
         break;
     case IRQ_OFFSET + IRQ_TIMER:
 		ticks ++;
-		
-            sched_class_proc_tick(current);
-        
+        //sched_class_proc_tick(current);
+        run_timer_list();
         /* LAB1 YOUR CODE : STEP 3 */
         /* handle the timer interrupt */
         /* (1) After a timer interrupt, you should record this event using a global variable (increase it), such as ticks in kern/driver/clock.c
