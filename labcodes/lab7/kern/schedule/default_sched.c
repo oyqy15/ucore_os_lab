@@ -72,7 +72,8 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (4) increase rq->proc_num
       */
       list_add_before(&(rq->run_list),&(proc->run_link));
-      proc->time_slice = rq->max_time_slice;
+	if (proc->time_slice == 0 || proc->time_slice>rq->max_time_slice)
+      		proc->time_slice = rq->max_time_slice;
       proc->rq = rq;
       rq->proc_num ++;
 }
