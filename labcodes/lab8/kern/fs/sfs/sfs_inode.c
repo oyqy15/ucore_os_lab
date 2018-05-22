@@ -553,7 +553,7 @@ static int
 sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset, size_t *alenp, bool write) {
     struct sfs_disk_inode *din = sin->din;
     assert(din->type != SFS_TYPE_DIR);
-    off_t endpos = offset + *alenp, blkoff;
+    off_t endpos = offset + *alenp, blkoff; //[offset, endpos)
     *alenp = 0;
 	// calculate the Rd/Wr end position
     if (offset < 0 || offset >= SFS_MAX_FILE_SIZE || offset > endpos) {
@@ -583,11 +583,14 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
         sfs_buf_op = sfs_rbuf, sfs_block_op = sfs_rblock;
     }
 
+    endpos --; // this make me easier
+
     int ret = 0;
     size_t size, alen = 0;
     uint32_t ino;
     uint32_t blkno = offset / SFS_BLKSIZE;          // The NO. of Rd/Wr begin block
     uint32_t nblks = endpos / SFS_BLKSIZE - blkno;  // The size of Rd/Wr blocks
+    uint32_t blkno2 = endpos / SFS_BLKSIZE;
 
   //LAB8:EXERCISE1 YOUR CODE HINT: call sfs_bmap_load_nolock, sfs_rbuf, sfs_rblock,etc. read different kind of blocks in file
 	/*
@@ -599,6 +602,33 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
      * (3) If end position isn't aligned with the last block, Rd/Wr some content from begin to the (endpos % SFS_BLKSIZE) of the last block
 	 *       NOTICE: useful function: sfs_bmap_load_nolock, sfs_buf_op	
 	*/
+
+    blkoff = offset % SFS_BLKSIZE;
+    size = (nblks != 0) ? (SFS_BLKSIZE - blkoff) : (endpos - offset + 1);
+    sfs_bmap_load_nolock(sfs, sin, blkno, ino);
+    sfs_buf_op(sfs, buf, size, ino,blkoff);
+
+    buf += size; alen += size;
+
+    if (nblks > 1){
+        sfs_bmap_load_nolock(sfs, sin, blkno + 1, ino);
+        sfs_block_op(sfs, buf, ino, nblks - 1);
+
+        buf += SFS_BLKSIZE * (nblks - 1);
+        alen += SFS_BLKSIZE * (nblks - 1);
+    }
+
+    if (nblks > 0){
+        size = endpos % SFS_BLKSIZE + 1;
+        sfs_bmap_load_nolock(sfs, sin, blkno2, ino);
+        sfs_buf_op(sfs, buf, size, ino, 0);
+
+        buf += size;
+        alen += size;
+    }
+
+
+
 out:
     *alenp = alen;
     if (offset + alen > sin->din->size) {
