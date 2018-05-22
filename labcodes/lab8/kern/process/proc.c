@@ -698,7 +698,7 @@ load_icode(int fd, int argc, char **kargv) {
             start += size;
         }
     }
-
+    sysfile_close(fd);
     vm_flags = VM_READ | VM_WRITE | VM_STACK;
     if ((ret = mm_map(mm, USTACKTOP - USTACKSIZE, USTACKSIZE, vm_flags, NULL)) != 0) {
         goto bad_cleanup_mmap;
