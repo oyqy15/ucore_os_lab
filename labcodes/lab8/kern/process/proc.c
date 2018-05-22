@@ -471,10 +471,10 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     proc->pid = get_pid();
     hash_proc(proc);
     set_links(proc);
-    wakeup_proc(proc);
+    //wakeup_proc(proc);
 
     local_intr_restore(intr_flag); //according to answer
-
+    wakeup_proc(proc);
     ret = proc->pid;
 
     //LAB4:EXERCISE2 YOUR CODE
@@ -606,7 +606,7 @@ load_icode(int fd, int argc, char **kargv) {
     int ret = -E_NO_MEM;
     struct mm_struct  *mm;
 
-    if ((mm == mm_create()) == NULL) {
+    if ((mm = mm_create()) == NULL) {
       goto bad_mm;
     }
 
@@ -615,8 +615,8 @@ load_icode(int fd, int argc, char **kargv) {
     }
 
     struct Page *page;
-    struct elfhdr *elf;
-    struct proghdr *ph;
+    struct elfhdr __,*elf=&__;
+    struct proghdr ___,*ph=&___;
 
     if (load_icode_read(fd, elf, sizeof(struct elfhdr), 0)!=0) goto bad_elf_cleanup_pgdir;
     //load_icode(fd, ph, sizeof(struct proghdr), elf->e_phoff);
