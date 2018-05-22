@@ -617,7 +617,7 @@ load_icode(int fd, int argc, char **kargv) {
     struct elfhdr *elf;
     struct proghdr *ph;
 
-    load_icode(fd, elf, sizeof(struct elfhdr), 0);
+    load_icode_read(fd, elf, sizeof(struct elfhdr), 0);
     //load_icode(fd, ph, sizeof(struct proghdr), elf->e_phoff);
 
     if (elf->e_magic != ELF_MAGIC) {
@@ -626,9 +626,9 @@ load_icode(int fd, int argc, char **kargv) {
     }
 
     uint32_t vm_flags, perm, phnum;
-    for (phnum =0 ; phnum < elf->phnum; phnum ++) {
+    for (phnum =0 ; phnum < elf->e_phnum; phnum ++) {
     //(3.4) find every program section headers
-        load_icode(fd , ph, sizeof(struct proghdr), elf->e_phoff + phnum * sizeof(struct proghdr));
+        load_icode_read(fd , ph, sizeof(struct proghdr), elf->e_phoff + phnum * sizeof(struct proghdr));
 
         if (ph->p_type != ELF_PT_LOAD) {
             continue ;
@@ -649,7 +649,7 @@ load_icode(int fd, int argc, char **kargv) {
         if ((ret = mm_map(mm, ph->p_va, ph->p_memsz, vm_flags, NULL)) != 0) {
             goto bad_cleanup_mmap;
         }
-        unsigned char *from = ph->p_offset;
+        off_t from = ph->p_offset;
         size_t off, size;
         uintptr_t start = ph->p_va, end, la = ROUNDDOWN(start, PGSIZE);
 
