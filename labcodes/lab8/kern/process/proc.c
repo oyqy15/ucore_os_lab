@@ -459,9 +459,10 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     proc->parent = current;
     assert(current->wait_state == 0);
 
-    if (setup_kstack(proc)!=0) goto bad_fork_cleanup_kstack;
-    if (copy_mm(clone_flags, proc)!=0) goto bad_fork_cleanup_proc;
-    if (copy_files(clone_flags, proc)!=0) goto bad_fork_cleanup_fs;
+    if (setup_kstack(proc)!=0) goto bad_fork_cleanup_proc;
+    if (copy_files(clone_flags, proc)!=0) goto bad_fork_cleanup_kstack;
+    if (copy_mm(clone_flags, proc)!=0) goto bad_fork_cleanup_fs;
+    
     copy_thread(proc, stack, tf);
 
     bool intr_flag;
@@ -617,7 +618,7 @@ load_icode(int fd, int argc, char **kargv) {
     struct elfhdr *elf;
     struct proghdr *ph;
 
-    load_icode_read(fd, elf, sizeof(struct elfhdr), 0);
+    if (load_icode_read(fd, elf, sizeof(struct elfhdr), 0)!=0) goto bad_elf_cleanup_pgdir;
     //load_icode(fd, ph, sizeof(struct proghdr), elf->e_phoff);
 
     if (elf->e_magic != ELF_MAGIC) {
@@ -628,7 +629,8 @@ load_icode(int fd, int argc, char **kargv) {
     uint32_t vm_flags, perm, phnum;
     for (phnum =0 ; phnum < elf->e_phnum; phnum ++) {
     //(3.4) find every program section headers
-        load_icode_read(fd , ph, sizeof(struct proghdr), elf->e_phoff + phnum * sizeof(struct proghdr));
+        if (load_icode_read(fd , ph, sizeof(struct proghdr), elf->e_phoff + phnum * sizeof(struct proghdr))!=0)
+	goto bad_cleanup_mmap;
 
         if (ph->p_type != ELF_PT_LOAD) {
             continue ;
@@ -666,7 +668,8 @@ load_icode(int fd, int argc, char **kargv) {
             if (end < la) {
                 size -= la - end;
             }
-            load_icode_read(fd, page2kva(page) + off, size, from);
+            if (load_icode_read(fd, page2kva(page) + off, size, from)!=0)
+		goto bad_cleanup_mmap;
             
             start += size, from += size;
         }
@@ -735,9 +738,9 @@ load_icode(int fd, int argc, char **kargv) {
     memset(tf, 0, sizeof(struct trapframe));
     tf->tf_cs = USER_CS;
     tf->tf_ds = tf->tf_es = tf->tf_ss = USER_DS;
-    tf->tf_esp = USTACKTOP;
+    tf->tf_esp = stacktop;
     tf->tf_eip = elf->e_entry;
-    tf->tf_eflags = (FL_IOPL_MASK | FL_IF);
+    tf->tf_eflags = (FL_IF);
 
     ret = 0;
     /* LAB8:EXERCISE2 YOUR CODE  HINT:how to load the file with handler fd  in to process's memory? how to setup argc/argv?

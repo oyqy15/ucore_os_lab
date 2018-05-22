@@ -610,12 +610,15 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
 
     buf += size; alen += size;
 
-    if (nblks > 1){
-        sfs_bmap_load_nolock(sfs, sin, blkno + 1, &ino);
-        sfs_block_op(sfs, buf, ino, nblks - 1);
-
-        buf += SFS_BLKSIZE * (nblks - 1);
-        alen += SFS_BLKSIZE * (nblks - 1);
+    if (nblks >= 2){
+	blkno ++; 
+	while (blkno <= blkno2 - 1) {
+		sfs_bmap_load_nolock(sfs, sin, blkno , &ino);
+		sfs_block_op(sfs, buf, ino, 1);
+		buf += SFS_BLKSIZE;
+		alen += SFS_BLKSIZE;
+		blkno ++;
+	}
     }
 
     if (nblks > 0){
